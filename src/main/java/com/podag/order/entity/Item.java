@@ -8,8 +8,8 @@ import java.util.Set;
 @Entity
 @Table(name = "item")
 public class Item {
-    @EmbeddedId
-    private ItemUserID itemId;
+    @Id
+    private String itemId;
     @Column(name = "name")
     private String name;
     @Column(name = "amount")
@@ -22,18 +22,18 @@ public class Item {
     public Item(){
     }
 
-    public Item(ItemUserID itemId, String name, int amount, BigDecimal price){
+    public Item(String itemId, String name, int amount, BigDecimal price){
         this.itemId = itemId;
         this.name = name;
         this.amount = amount;
         this.price = price;
     }
 
-    public ItemUserID getItemId() {
+    public String getItemId() {
         return itemId;
     }
 
-    public void setItemId(ItemUserID itemId) {
+    public void setItemId(String itemId) {
         this.itemId = itemId;
     }
 
