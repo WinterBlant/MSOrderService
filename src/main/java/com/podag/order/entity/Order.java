@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 
 @Entity
-@Table(name = "orders")
+@Table(name="Orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,31 +22,30 @@ public class Order {
     private int totalAmount;
     @Column(name = "totalCost")
     private BigDecimal totalCost;
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name="orderitem",
-        joinColumns = @JoinColumn(name = "OrderID", referencedColumnName = "orderID"),
-        inverseJoinColumns = @JoinColumn(name = "ItemID", referencedColumnName = "itemId"))
-    private Set<Item> orderItems;
+    @OneToMany(mappedBy = "ord", cascade = CascadeType.ALL)
+    Set<OrderItem> orderItems;
 
     public Order (){
         this.status = OrderStatus.COLLECTING.toString();
     }
-    public Order(String username, int totalAmount, BigDecimal totalCost, Item... items){
+    public Order(String username, int totalAmount, BigDecimal totalCost, OrderItem... items){
         this.status = OrderStatus.COLLECTING.toString();
         this.username = username;
         this.totalAmount = totalAmount;
         this.totalCost = totalCost;
+        for(OrderItem orderitems : items) orderitems.setOrder(this);
         this.orderItems = Stream.of(items).collect(Collectors.toSet());
     }
-
-    public Order(int orderID, String username, int totalAmount, BigDecimal totalCost, Item... items){
-        this.orderID = orderID;
-        this.status = OrderStatus.COLLECTING.toString();
-        this.username = username;
-        this.totalAmount = totalAmount;
-        this.totalCost = totalCost;
-        this.orderItems = Stream.of(items).collect(Collectors.toSet());
-    }
+//
+//    public Order(int orderID, String username, int totalAmount, BigDecimal totalCost, OrderItem... items){
+//        this.orderID = orderID;
+//        this.status = OrderStatus.COLLECTING.toString();
+//        this.username = username;
+//        this.totalAmount = totalAmount;
+//        this.totalCost = totalCost;
+//        for(OrderItem orderitems : items) orderitems.setOrder(this);
+//        this.orderItems = Stream.of(items).collect(Collectors.toSet());
+//    }
 
     public int getOrderID() {
         return orderID;
@@ -88,11 +87,11 @@ public class Order {
         this.totalCost = totalCost;
     }
 
-    public Set<Item> getOrderItems() {
+    public Set<OrderItem> getOrderItems() {
         return orderItems;
     }
 
-    public void setOrderItems(Set<Item> orderItems) {
+    public void setOrderItems(Set<OrderItem> orderItems) {
         this.orderItems = orderItems;
     }
 }

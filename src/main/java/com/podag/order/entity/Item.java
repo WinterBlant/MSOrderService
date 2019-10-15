@@ -6,34 +6,31 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "item")
+@Table(name="item")
 public class Item {
-    @EmbeddedId
-    private ItemUserID itemId;
+    @Id
+    private int itemId;
     @Column(name = "name")
     private String name;
-    @Column(name = "amount")
-    private int amount;
     @Column(name = "price")
     private BigDecimal price;
-    @ManyToMany(mappedBy = "orderItems")
-    private Set<Order> orders = new HashSet<>();
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
+    Set<OrderItem> orders;
 
     public Item(){
     }
 
-    public Item(ItemUserID itemId, String name, int amount, BigDecimal price){
+    public Item(int itemId, String name, BigDecimal price){
         this.itemId = itemId;
         this.name = name;
-        this.amount = amount;
         this.price = price;
     }
 
-    public ItemUserID getItemId() {
+    public int getItemId() {
         return itemId;
     }
 
-    public void setItemId(ItemUserID itemId) {
+    public void setItemId(int itemId) {
         this.itemId = itemId;
     }
 
@@ -45,14 +42,6 @@ public class Item {
         this.name = name;
     }
 
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
-
     public BigDecimal getPrice() {
         return price;
     }
@@ -61,11 +50,11 @@ public class Item {
         this.price = price;
     }
 
-    public Set<Order> getOrders() {
+    public Set<OrderItem> getOrders() {
         return orders;
     }
 
-    public void setOrders(Set<Order> orders) {
+    public void setOrders(Set<OrderItem> orders) {
         this.orders = orders;
     }
 }
