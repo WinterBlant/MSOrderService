@@ -23,7 +23,7 @@ public class Order {
     @Column(name = "totalCost")
     private BigDecimal totalCost;
     @OneToMany(mappedBy = "ord", cascade = CascadeType.ALL)
-    Set<OrderItem> orderItems;
+    private Set<OrderItem> orderItems;
 
     public Order (){
         this.status = OrderStatus.COLLECTING.toString();

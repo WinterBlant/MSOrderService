@@ -21,7 +21,7 @@ public class OrderItem implements Serializable {
     @JoinColumn
     private Item item;
 
-    int amount;
+    private int amount;
 
     public OrderItem(){
 
