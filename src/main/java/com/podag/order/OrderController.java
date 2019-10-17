@@ -6,6 +6,7 @@ import com.podag.order.dto.ItemAdditionParametersDTO;
 import com.podag.order.entity.Item;
 import com.podag.order.entity.Order;
 //import com.podag.order.entity.OrderItem;
+import com.podag.order.entity.OrderItem;
 import com.podag.order.repos.ItemRepository;
 //import com.podag.order.repos.OrderItemRepository;
 import com.podag.order.repos.OrderRepository;
@@ -24,6 +25,9 @@ public class OrderController {
 
     @Autowired
     private OrderRepository orderrepo;
+
+    @Autowired
+    private ItemRepository itemrepo;
 
     @GetMapping
     public List<Order> getOrders() {
@@ -50,19 +54,20 @@ public class OrderController {
         if (orderID.equals("null") || orderID.equals("")){
             ObjectMapper objectMapper = new ObjectMapper();
             ItemAdditionParametersDTO itempar = objectMapper.readValue(data, ItemAdditionParametersDTO.class);
-            String iuid = itempar.getItemId() + itempar.getUsername();
-            Item item = new Item(iuid, itempar.getName(), itempar.getAmount(), itempar.getPrice());
-            Order order = new Order(itempar.getUsername(), itempar.getAmount(), itempar.getPrice(), item);
-            orderrepo.save(order);
+            Item item = new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice());
+            itemrepo.save(item);
+            orderrepo.save(new Order(itempar.getUsername(), itempar.getAmount(), itempar.getPrice(), new OrderItem(item, itempar.getAmount())));
         } else {
             ObjectMapper objectMapper = new ObjectMapper();
             ItemAdditionParametersDTO itempar = objectMapper.readValue(data, ItemAdditionParametersDTO.class);
-            String iuid = itempar.getItemId() + itempar.getUsername();
-            Item item = new Item(iuid, itempar.getName(), itempar.getAmount(), itempar.getPrice());
+            Item item = new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice());
+            itemrepo.save(item);
             Order ordertoupdate = orderrepo.getOne(new Integer(orderID));
-            ordertoupdate.setTotalAmount(ordertoupdate.getTotalAmount()+item.getAmount());
+            System.out.println(orderID);
             ordertoupdate.setTotalCost(ordertoupdate.getTotalCost().add(item.getPrice()));
-            ordertoupdate.getOrderItems().add(item);
+            ordertoupdate.setTotalAmount(ordertoupdate.getTotalAmount()+itempar.getAmount());
+            OrderItem orditem = new OrderItem(item, itempar.getAmount());
+            ordertoupdate.getOrderItems().add(orditem);
             orderrepo.save(ordertoupdate);
         }
     }
