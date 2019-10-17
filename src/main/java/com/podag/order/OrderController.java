@@ -63,10 +63,9 @@ public class OrderController {
             Item item = new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice());
             itemrepo.save(item);
             Order ordertoupdate = orderrepo.getOne(new Integer(orderID));
-            System.out.println(orderID);
             ordertoupdate.setTotalCost(ordertoupdate.getTotalCost().add(item.getPrice()));
             ordertoupdate.setTotalAmount(ordertoupdate.getTotalAmount()+itempar.getAmount());
-            OrderItem orditem = new OrderItem(item, itempar.getAmount());
+            OrderItem orditem = new OrderItem(ordertoupdate, item, itempar.getAmount());
             ordertoupdate.getOrderItems().add(orditem);
             orderrepo.save(ordertoupdate);
         }

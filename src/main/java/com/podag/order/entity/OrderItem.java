@@ -8,7 +8,7 @@ import java.util.Objects;
 @Table(name="orderitem")
 public class OrderItem implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long Id_OI;
 
     //@Id
@@ -27,6 +27,12 @@ public class OrderItem implements Serializable {
 
     }
     public OrderItem (Item item, int amount){
+        this.item = item;
+        this.amount = amount;
+    }
+
+    public OrderItem (Order ord, Item item, int amount){
+        this.ord = ord;
         this.item = item;
         this.amount = amount;
     }
