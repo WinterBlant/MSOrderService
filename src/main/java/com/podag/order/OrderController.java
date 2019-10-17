@@ -1,14 +1,12 @@
 package com.podag.order;
 
-import com.fasterxml.jackson.core.JsonParser;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.podag.order.dto.ItemAdditionParametersDTO;
 import com.podag.order.entity.Item;
 import com.podag.order.entity.Order;
-//import com.podag.order.entity.OrderItem;
 import com.podag.order.entity.OrderItem;
 import com.podag.order.repos.ItemRepository;
-//import com.podag.order.repos.OrderItemRepository;
 import com.podag.order.repos.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +14,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
-
 
     @Autowired
     private OrderRepository orderrepo;
@@ -34,14 +30,6 @@ public class OrderController {
         return orderrepo.findAll();
     }
 
-//    @RequestMapping(value = "dododi/dododo", method = RequestMethod.GET)
-//    @ResponseBody
-//    public HttpStatus additem() {
-//        Order order = new Order(145412);
-//        orderrepo.save(order);
-//        return HttpStatus.CREATED;
-//    }
-
     @GetMapping("{orderid}")
     public ResponseEntity<Order> getOrderById(@PathVariable(value = "orderid") Integer orderID) {
         Order order = orderrepo.findById(orderID).orElse(new Order());
@@ -51,15 +39,13 @@ public class OrderController {
     @PostMapping(value = "{orderid}/item", consumes = "application/json")
     @ResponseBody
     public void addToOrder (@PathVariable(value = "orderid") String orderID, @RequestBody String data) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ItemAdditionParametersDTO itempar = objectMapper.readValue(data, ItemAdditionParametersDTO.class);
         if (orderID.equals("null") || orderID.equals("")){
-            ObjectMapper objectMapper = new ObjectMapper();
-            ItemAdditionParametersDTO itempar = objectMapper.readValue(data, ItemAdditionParametersDTO.class);
             Item item = new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice());
             itemrepo.save(item);
             orderrepo.save(new Order(itempar.getUsername(), itempar.getAmount(), itempar.getPrice(), new OrderItem(item, itempar.getAmount())));
         } else {
-            ObjectMapper objectMapper = new ObjectMapper();
-            ItemAdditionParametersDTO itempar = objectMapper.readValue(data, ItemAdditionParametersDTO.class);
             Item item = new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice());
             itemrepo.save(item);
             Order ordertoupdate = orderrepo.getOne(new Integer(orderID));
@@ -71,6 +57,10 @@ public class OrderController {
         }
     }
 
-
-
+    @RequestMapping(value = "{orderid}/status/{status}", method = RequestMethod.PUT)
+    public void changeOrderStatus (@PathVariable(value = "orderid") Integer orderID, @PathVariable(value = "status") String status) {
+        Order ordertoupdate = orderrepo.getOne(new Integer(orderID));
+        ordertoupdate.setStatus(OrderStatus.valueOf(status));
+        orderrepo.save(ordertoupdate);
+    }
 }

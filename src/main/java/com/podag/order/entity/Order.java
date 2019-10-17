@@ -36,16 +36,6 @@ public class Order {
         for(OrderItem orderitems : items) orderitems.setOrder(this);
         this.orderItems = Stream.of(items).collect(Collectors.toSet());
     }
-//
-//    public Order(int orderID, String username, int totalAmount, BigDecimal totalCost, OrderItem... items){
-//        this.orderID = orderID;
-//        this.status = OrderStatus.COLLECTING.toString();
-//        this.username = username;
-//        this.totalAmount = totalAmount;
-//        this.totalCost = totalCost;
-//        for(OrderItem orderitems : items) orderitems.setOrder(this);
-//        this.orderItems = Stream.of(items).collect(Collectors.toSet());
-//    }
 
     public int getOrderID() {
         return orderID;

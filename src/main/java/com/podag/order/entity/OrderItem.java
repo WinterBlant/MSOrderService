@@ -11,12 +11,10 @@ public class OrderItem implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long Id_OI;
 
-    //@Id
     @ManyToOne
     @JoinColumn
     private Order ord;
 
-    //@Id
     @ManyToOne
     @JoinColumn
     private Item item;
