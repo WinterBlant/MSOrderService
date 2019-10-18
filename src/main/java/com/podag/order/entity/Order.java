@@ -22,7 +22,7 @@ public class Order {
     private int totalAmount;
     @Column(name = "totalCost")
     private BigDecimal totalCost;
-    @OneToMany(mappedBy = "ord", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "ord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<OrderItem> orderItems;
 
     public Order (){

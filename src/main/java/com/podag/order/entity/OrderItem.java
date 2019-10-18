@@ -1,22 +1,23 @@
 package com.podag.order.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.*;
-import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name="orderitem")
-public class OrderItem implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long Id_OI;
+@JsonIgnoreProperties({"order","orditID"})
+public class OrderItem{
+    @EmbeddedId
+    private OrderItemKey orditID;
 
     @ManyToOne
-    @JoinColumn
+    @MapsId("ordID")
     private Order ord;
 
     @ManyToOne
-    @JoinColumn
+    @MapsId("itemID")
     private Item item;
 
     private int amount;
@@ -27,12 +28,14 @@ public class OrderItem implements Serializable {
     public OrderItem (Item item, int amount){
         this.item = item;
         this.amount = amount;
+        this.orditID = new OrderItemKey(item.getItemId());
     }
 
     public OrderItem (Order ord, Item item, int amount){
         this.ord = ord;
         this.item = item;
         this.amount = amount;
+        this.orditID = new OrderItemKey(ord.getOrderID(), item.getItemId());
     }
     public int getAmount() {
         return amount;
@@ -58,12 +61,12 @@ public class OrderItem implements Serializable {
         this.item = item;
     }
 
-    public Long getId_OI() {
-        return Id_OI;
+    public OrderItemKey getOrditID() {
+        return orditID;
     }
 
-    public void setId_OI(Long id_OI) {
-        Id_OI = id_OI;
+    public void setOrditID(OrderItemKey orditID) {
+        this.orditID = orditID;
     }
 
     @Override

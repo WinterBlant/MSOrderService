@@ -1,11 +1,15 @@
 package com.podag.order.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name="item")
+@JsonIgnoreProperties("orders")
 public class Item {
     @Id
     private int itemId;
@@ -13,8 +17,8 @@ public class Item {
     private String name;
     @Column(name = "price")
     private BigDecimal price;
-    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
-    Set<OrderItem> orders;
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<OrderItem> orders = new HashSet<>();
 
     public Item(){
     }
