@@ -15,7 +15,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int orderID;
     @Column(name = "status")
-    private String status;
+    private OrderStatus status;
     @Column(name = "username")
     private String username;
     @Column(name = "totalAmount")
@@ -26,10 +26,10 @@ public class Order {
     private Set<OrderItem> orderItems;
 
     public Order (){
-        this.status = OrderStatus.COLLECTING.toString();
+        this.status = OrderStatus.COLLECTING;
     }
     public Order(String username, int totalAmount, BigDecimal totalCost, OrderItem... items){
-        this.status = OrderStatus.COLLECTING.toString();
+        this.status = OrderStatus.COLLECTING;
         this.username = username;
         this.totalAmount = totalAmount;
         this.totalCost = totalCost;
@@ -45,12 +45,12 @@ public class Order {
         this.orderID = orderID;
     }
 
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
     public void setStatus(OrderStatus status) {
-        this.status = status.toString();
+        this.status = status;
     }
 
     public String getUsername() {

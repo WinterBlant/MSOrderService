@@ -1,6 +1,7 @@
 package com.podag.order.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.podag.order.OrderStatus;
 import com.podag.order.entity.OrderItem;
 
 import java.math.BigDecimal;
@@ -9,7 +10,7 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class OrderDTO {
     private int orderID;
-    private String status;
+    private OrderStatus status;
     private String username;
     private int totalAmount;
     private BigDecimal totalCost;
@@ -23,12 +24,12 @@ public class OrderDTO {
         this.orderID = orderID;
     }
 
-    public OrderDTO(int orderID, String status){
+    public OrderDTO(int orderID, OrderStatus status){
         this.orderID = orderID;
         this.status = status;
     }
 
-    public OrderDTO(int orderID, String status, String username, int totalAmount, BigDecimal totalCost, Set<OrderItem> ordItem){
+    public OrderDTO(int orderID, OrderStatus status, String username, int totalAmount, BigDecimal totalCost, Set<OrderItem> ordItem){
         this.orderID = orderID;
         this.status = status;
         this.username = username;
@@ -44,11 +45,11 @@ public class OrderDTO {
         this.orderID = orderID;
     }
 
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
 
