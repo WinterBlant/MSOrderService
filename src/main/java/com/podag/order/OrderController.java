@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.directory.InvalidAttributeValueException;
 import javax.naming.directory.InvalidSearchFilterException;
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.List;
 
@@ -27,44 +29,23 @@ public class OrderController {
     private OrderService ordserv;
 
     @GetMapping
-    public ResponseEntity<List<Order>> getOrders() {
-        try {
-            LOGGER.info("Calling method getOrders");
-            return ResponseEntity.ok().body(ordserv.findAll());
-        }
-        catch (InvalidSearchFilterException e) {
-            LOGGER.warn("No orders in the database");
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e){
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<List<Order>> getOrders() throws InvalidSearchFilterException {
+        LOGGER.info("Calling method getOrders");
+        return ResponseEntity.ok().body(ordserv.findAll());
     }
 
     @GetMapping("{orderid}")
     public ResponseEntity<OrderDTO> getOrderById(@PathVariable(value = "orderid") Integer orderID) {
-        try {
-            LOGGER.info("Calling method getOrderById with orderID = {}", orderID);
-            return ResponseEntity.ok().body(ordserv.findByID(orderID));
-        } catch (InvalidParameterException e){
-            LOGGER.error("No order with such ID found");
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        LOGGER.info("Calling method getOrderById with orderID = {}", orderID);
+        return ResponseEntity.ok().body(ordserv.findByID(orderID));
     }
 
     @PostMapping(value = "{orderid}/item", consumes = "application/json")
-    public ResponseEntity<OrderDTO> addToOrder (@PathVariable(value = "orderid") String orderID, @RequestBody String data){
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            ItemAdditionParametersDTO itempar = objectMapper.readValue(data, ItemAdditionParametersDTO.class);
-            LOGGER.info("Calling method addToOrder with orderID = {} and item with name = {} and price = {}", orderID, itempar.getName(), itempar.getPrice());
-            return ResponseEntity.ok().body(ordserv.addItem(orderID, itempar));
-        } catch (Exception e){
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<OrderDTO> addToOrder (@PathVariable(value = "orderid") String orderID, @RequestBody String data) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ItemAdditionParametersDTO itempar = objectMapper.readValue(data, ItemAdditionParametersDTO.class);
+        LOGGER.info("Calling method addToOrder with orderID = {} and item with name = {} and price = {}", orderID, itempar.getName(), itempar.getPrice());
+        return ResponseEntity.ok().body(ordserv.addItem(orderID, itempar));
     }
 
     @RequestMapping(value = "{orderid}/status/{status}", method = RequestMethod.PUT)
@@ -77,6 +58,9 @@ public class OrderController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (IllegalArgumentException e) {
             LOGGER.error("No status with such status name exists");
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (InvalidAttributeValueException e) {
+            LOGGER.error("Can't go to status = {}; check the state machine", status);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

@@ -13,7 +13,9 @@ import com.podag.order.repos.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.naming.directory.InvalidAttributeValueException;
 import javax.naming.directory.InvalidSearchFilterException;
+import javax.transaction.Transactional;
 import java.security.InvalidParameterException;
 import java.util.List;
 
@@ -42,7 +44,9 @@ public class OrderService {
 
     public OrderDTO addItem(String orderID, ItemAdditionParametersDTO itempar) {
         if (orderID.equals("null") || orderID.equals("")) {
-            Order order = new Order(itempar.getUsername(), itempar.getAmount(), itempar.getPrice(), new OrderItem(itemrepo.findById(itempar.getItemId()).orElse(new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice())), itempar.getAmount()));
+            Order order = new Order(itempar.getUsername(), itempar.getAmount(), itempar.getPrice(),
+                    new OrderItem(itemrepo.findById(itempar.getItemId())
+                            .orElse(new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice())), itempar.getAmount()));
             orderrepo.save(order);
             return new OrderDTO(order.getOrderID());
         } else {
@@ -64,9 +68,12 @@ public class OrderService {
         }
     }
 
-    public OrderDTO changeStatus(Integer orderID, String status) {
+    @Transactional
+    public OrderDTO changeStatus(Integer orderID, String status) throws InvalidAttributeValueException {
         Order ordertoupdate = orderrepo.findById(orderID).orElseThrow(InvalidParameterException::new);
-        ordertoupdate.setStatus(OrderStatus.valueOf(status.toUpperCase()));
+        if (ordertoupdate.getStatus().nextState().contains(OrderStatus.valueOf(status.toUpperCase()))) {
+            ordertoupdate.setStatus(OrderStatus.valueOf(status.toUpperCase()));
+        } else throw new InvalidAttributeValueException();
         orderrepo.save(ordertoupdate);
         return new OrderDTO(orderID, ordertoupdate.getStatus());
     }
