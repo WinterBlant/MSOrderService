@@ -10,6 +10,9 @@ import com.podag.order.entity.OrderItemKey;
 import com.podag.order.repos.ItemRepository;
 import com.podag.order.repos.OrderItemRepository;
 import com.podag.order.repos.OrderRepository;
+import org.json.JSONObject;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,10 +21,16 @@ import javax.naming.directory.InvalidSearchFilterException;
 import javax.transaction.Transactional;
 import java.security.InvalidParameterException;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class OrderService {
 
+    private static final String WAREHOUSE_EXCHANGE = "warehouseCommandExchange";
+    private static final String WAREHOUSE_KEY = "whcKey";
+    private static final String EVENT_EXCHANGE = "statusExchange";
+
+    private final RabbitTemplate rabbitTemplate;
     @Autowired
     OrderRepository orderrepo;
     @Autowired
@@ -29,12 +38,31 @@ public class OrderService {
     @Autowired
     OrderItemRepository oirepo;
 
+    public OrderService(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
+    }
+
     public List<Order> findAll() throws InvalidSearchFilterException {
         List<Order> orderlist = orderrepo.findAll();
         if (orderlist.isEmpty()) {
             throw new InvalidSearchFilterException("No orders in database");
         }
         return orderlist;
+    }
+
+    @RabbitListener(queues = {"paymentStatus"})
+    public void receiveMessageFromPayment(String message) throws InvalidAttributeValueException {
+        JSONObject json = new JSONObject(message);
+        Map<String, Object> map = json.toMap();
+        String ordstat = (String) map.get("status");
+        int orderID = (Integer) map.get("orderID");
+        changeStatus(orderID, ordstat);
+    }
+
+    @RabbitListener(queues = {"warehouseCommand"})
+    public void receiveMessageFromTopic1(String message) {
+        JSONObject json = new JSONObject(message);
+        System.out.println("Received topic 1 + message: " + json);
     }
 
     public OrderDTO findByID(int orderID) {
@@ -48,9 +76,11 @@ public class OrderService {
                     new OrderItem(itemrepo.findById(itempar.getItemId())
                             .orElse(new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice())), itempar.getAmount()));
             orderrepo.save(order);
+            this.reserveItems(Integer.parseInt(orderID), itempar.getItemId(), itempar.getAmount());
             return new OrderDTO(order.getOrderID());
         } else {
             Item item = new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice());
+            itemrepo.save(item);
             Order ordertoupdate = orderrepo.findById(Integer.parseInt(orderID)).orElse(new Order());
             ordertoupdate.setTotalCost(ordertoupdate.getTotalCost().add(item.getPrice()));
             ordertoupdate.setTotalAmount(ordertoupdate.getTotalAmount() + itempar.getAmount());
@@ -64,6 +94,7 @@ public class OrderService {
                 ordertoupdate.getOrderItems().add(orditem);
             }
             orderrepo.save(ordertoupdate);
+            this.reserveItems(Integer.parseInt(orderID), itempar.getItemId(), itempar.getAmount());
             return new OrderDTO(ordertoupdate.getOrderID());
         }
     }
@@ -75,6 +106,15 @@ public class OrderService {
             ordertoupdate.setStatus(OrderStatus.valueOf(status.toUpperCase()));
         } else throw new InvalidAttributeValueException();
         orderrepo.save(ordertoupdate);
+        rabbitTemplate.convertAndSend(EVENT_EXCHANGE, "", "Status changed to" + ordertoupdate.getStatus());
         return new OrderDTO(orderID, ordertoupdate.getStatus());
+    }
+
+    public void reserveItems(int orderID, int itemID, int amount) {
+        JSONObject jo = new JSONObject();
+        jo.put("orderID", orderID);
+        jo.put("id", itemID);
+        jo.put("amount", amount);
+        rabbitTemplate.convertAndSend(WAREHOUSE_EXCHANGE, WAREHOUSE_KEY, jo.toString());
     }
 }

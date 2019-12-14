@@ -18,9 +18,9 @@ public class Order {
     private OrderStatus status;
     @Column(name = "username")
     private String username;
-    @Column(name = "totalAmount")
+    @Column(name = "total_amount")
     private int totalAmount;
-    @Column(name = "totalCost")
+    @Column(name = "total_cost")
     private BigDecimal totalCost;
     @OneToMany(mappedBy = "ord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<OrderItem> orderItems;
