@@ -76,7 +76,7 @@ public class OrderService {
                     new OrderItem(itemrepo.findById(itempar.getItemId())
                             .orElse(new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice())), itempar.getAmount()));
             orderrepo.save(order);
-            this.reserveItems(Integer.parseInt(orderID), itempar.getItemId(), itempar.getAmount());
+            this.reserveItems(order.getOrderID(), itempar.getItemId(), itempar.getAmount());
             return new OrderDTO(order.getOrderID());
         } else {
             Item item = new Item(itempar.getItemId(), itempar.getName(), itempar.getPrice());
@@ -106,7 +106,10 @@ public class OrderService {
             ordertoupdate.setStatus(OrderStatus.valueOf(status.toUpperCase()));
         } else throw new InvalidAttributeValueException();
         orderrepo.save(ordertoupdate);
-        rabbitTemplate.convertAndSend(EVENT_EXCHANGE, "", "Status changed to" + ordertoupdate.getStatus());
+        JSONObject jo = new JSONObject();
+        jo.put("status", ordertoupdate.getStatus());
+        jo.put("orderID", orderID);
+        rabbitTemplate.convertAndSend(EVENT_EXCHANGE, "", jo.toString());
         return new OrderDTO(orderID, ordertoupdate.getStatus());
     }
 
