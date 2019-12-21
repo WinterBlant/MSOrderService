@@ -11,8 +11,8 @@ public class RabbitMQ {
         FanoutExchange statusExchange = new FanoutExchange("statusExchange");
         DirectExchange paymentOrderStatus = new DirectExchange("paymentOrderStatus");
         DirectExchange warehouseCommandExchange = new DirectExchange("warehouseCommandExchange");
-        Queue paymentStatus = new Queue("paymentStatus", false);
-        Queue warehouseCommand = new Queue("warehouseCommand", false);
+        Queue paymentStatus = new Queue("paymentStatus", true);
+        Queue warehouseCommand = new Queue("warehouseCommand", true);
 
         return new Declarables(
                 paymentStatus,

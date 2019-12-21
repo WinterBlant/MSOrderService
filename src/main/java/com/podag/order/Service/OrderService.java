@@ -42,8 +42,9 @@ public class OrderService {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public List<Order> findAll() throws InvalidSearchFilterException {
+    public List<Order> findAll() throws InvalidSearchFilterException, InterruptedException {
         List<Order> orderlist = orderrepo.findAll();
+        Thread.sleep(15000);
         if (orderlist.isEmpty()) {
             throw new InvalidSearchFilterException("No orders in database");
         }

@@ -29,7 +29,7 @@ public class OrderController {
     private OrderService ordserv;
 
     @GetMapping
-    public ResponseEntity<List<Order>> getOrders() throws InvalidSearchFilterException {
+    public ResponseEntity<List<Order>> getOrders() throws InvalidSearchFilterException, InterruptedException {
         LOGGER.info("Calling method getOrders");
         return ResponseEntity.ok().body(ordserv.findAll());
     }
